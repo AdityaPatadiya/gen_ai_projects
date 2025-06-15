@@ -1,0 +1,69 @@
+Job Title: Cybersecurity Analyst / Security Engineer (or specific role like Incident Response Analyst, SOC Analyst, etc.)
+
+Location: Rajkot, Gujarat, India
+
+Company: TechDefenceLabs
+
+About Us:
+"At TechDefenceLabs, we are a leading Cybersecurity industry firm dedicated to innovation and protecting our digital assets. We are seeking a passionate and skilled Cybersecurity Professional to join our growing team and help us build and maintain a robust security posture against evolving cyber threats."
+
+Job Summary:
+The Cybersecurity Analyst/Engineer will be responsible for protecting the organization's information systems, networks, and data from cyber threats. This includes identifying vulnerabilities, implementing security measures, monitoring for suspicious activity, responding to security incidents, and ensuring compliance with security policies and regulations.
+
+Key Responsibilities:
+
+Security Monitoring & Incident Response:
+Monitor security systems (SIEM, EDR, IDS/IPS, Firewalls) for alerts, intrusions, and security breaches.
+Investigate security incidents, determine their scope and impact, and execute appropriate response procedures.
+Perform forensic analysis on compromised systems to identify root causes and develop remediation strategies.
+Document security incidents, findings, and remediation steps accurately and comprehensively.
+Vulnerability Management & Penetration Testing (depending on role):
+Conduct vulnerability assessments and penetration tests on applications, networks, and systems to identify weaknesses.
+Analyze test results and provide recommendations for remediation and security enhancements.
+Work with development and IT teams to prioritize and fix identified vulnerabilities.
+Security Operations & Hardening:
+Implement, configure, and maintain security tools and technologies (e.g., firewalls, antivirus, access controls, encryption).
+Assist in the development, implementation, and enforcement of security policies, standards, and procedures.
+Perform regular security reviews and audits of systems and configurations.
+Stay up-to-date with the latest cyber threat landscape, attack techniques, and security technologies.
+Risk Management & Compliance:
+Assist in identifying, assessing, and mitigating information security risks.
+Ensure compliance with relevant industry regulations and data protection laws (e.g., GDPR, ISO 27001, local Indian data protection laws).
+Participate in security awareness training programs for employees.
+Collaboration & Documentation:
+Collaborate with IT, development, and other business units to integrate security into all aspects of the organization.
+Create and maintain detailed documentation for security processes, configurations, and incident reports.
+Qualifications:
+
+Education: Bachelor's degree in Computer Science, Information Technology, Cybersecurity, or a related field. (Master's degree a plus for senior roles).
+Experience:
+2+ of experience in cybersecurity or a related IT field. (For entry-level, "Relevant internship experience or academic projects will be considered.")
+Hands-on experience with security tools and technologies (e.g., SIEM, firewalls, IDS/IPS, vulnerability scanners).
+Technical Skills:
+Strong understanding of networking concepts (TCP/IP, DNS, VPNs, routing, switching).
+Familiarity with various operating systems (Windows, Linux, macOS).
+Knowledge of common cybersecurity frameworks and standards (e.g., NIST, ISO 27001).
+Understanding of common attack vectors and defense strategies.
+Experience with scripting languages (e.g., Python, PowerShell) is a plus.
+Familiarity with cloud security concepts (AWS, Azure, GCP) is a plus.
+Soft Skills:
+Strong analytical and problem-solving skills with excellent attention to detail.
+Excellent communication (verbal and written) and interpersonal skills.
+Ability to work independently and as part of a team.
+Proactive, self-motivated, and eager to learn and adapt in a fast-paced environment.
+Ability to remain calm and effective under pressure, especially during incident response.
+Preferred Certifications (highly valued in the Indian market):
+
+CompTIA Security+ (Excellent for entry-level)
+CompTIA CySA+
+Certified Ethical Hacker (CEH)
+(ISC)² SSCP
+(ISC)² CISSP (for more senior roles)
+Cisco CCNA Security / CCNP Security
+Cloud-specific certifications (e.g., AWS Certified Security - Specialty, Azure Security Engineer Associate)
+What We Offer:
+
+Competitive salary and benefits package.
+Opportunity to work on cutting-edge cybersecurity challenges.
+Continuous learning and professional development opportunities.
+A collaborative and supportive work environment.
