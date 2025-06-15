@@ -1,0 +1,5 @@
+Metadata:
+Tags: football, cricket, basketball
+
+Description:
+This file contains information about popular sports, their roles in community bonding, and their influence on rural lifestyle and culture.
