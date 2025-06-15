@@ -8,8 +8,8 @@ import os
 import streamlit as st
 
 # Set credentials directly (REPLACE with your actual values)
-os.environ["AZURE_OPENAI_API_KEY"] = "3FCzscUsEdSyMG6fqrY82Ok9O1bhJjkNztPNsL95qgcrHVS5Ql01JQQJ99BFACHYHv6XJ3w3AAAAACOGZo7j"
-os.environ["AZURE_OPENAI_API_BASE"] = "https://aadit-mbok6f21-eastus2.cognitiveservices.azure.com/"
+os.environ["AZURE_OPENAI_API_KEY"] = "<replace_with_your_api_key>"
+os.environ["AZURE_OPENAI_API_BASE"] = "<replace_with_your_api_base_url>"
 os.environ["AZURE_OPENAI_API_VERSION"] = "2024-12-01-preview"
 os.environ["AZURE_OPENAI_API_NAME"] = "gpt-4o"
 

@@ -1,5 +1,7 @@
 import streamlit as st
 from PyPDF2 import PdfReader
+from fpdf import FPDF
+import unicodedata
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chat_models import AzureChatOpenAI
 from langchain.prompts import PromptTemplate
@@ -83,6 +85,20 @@ Please respond in a clear format.
     return result.generations[0][0].text
 
 
+def save_to_pdf(questions, output_file):
+    """Save questions to PDF file."""
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size = 14)
+
+    for line in questions.splitlines():
+        # Normalize to ASCII
+        ascii_line = unicodedata.normalize('NFKD', line).encode('ascii', 'ignore').decode()
+        pdf.multi_cell(200, 10, ascii_line)
+
+    pdf.output(output_file)
+
+
 def main():
     """Streamlit UI Main function."""
     st.title("Question Paper Generator")
@@ -95,7 +111,7 @@ def main():
 
         st.success("Questions generated successfully.")
 
-        # Split questions by lines and format nicely
+        # Display questions nicely
         lines = questions.splitlines()
         question_count = 1
         for line in lines:
@@ -107,6 +123,17 @@ def main():
             else:
                 st.text(line)
 
+        if st.button("Save questions to PDF"):
+            pdf_file = "generated_questions.pdf"
+            save_to_pdf(questions, pdf_file)
+
+            with open(pdf_file, "rb") as file:
+                st.download_button(
+                    label="Download PDF",
+                    data=file,
+                    file_name=pdf_file,
+                    mime="application/pdf"
+                )
 
 
 if __name__ == "__main__":
