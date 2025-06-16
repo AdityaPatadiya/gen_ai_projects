@@ -41,14 +41,14 @@ if not os.path.exists("movie_embeddings.json"):
     with open("movie_embeddings.json", "w") as f:
         json.dump(movie_data, f, indent=2)
 
-    print("✅ Embeddings saved to 'movie_embeddings.json'\n")
+    print("✅ Embeddings saved to 'files/movie_embeddings.json'\n")
 
 # Step 2: Load user input and compute similarity
 user_input = input("🎬 Enter a movie name or genre description: ").lower()
 query_vector = model.encode([user_input])
 
 # Load embeddings from JSON
-with open("movie_embeddings.json", "r") as f:
+with open("files/movie_embeddings.json", "r") as f:
     loaded_data = json.load(f)
 
 # Prepare data for comparison

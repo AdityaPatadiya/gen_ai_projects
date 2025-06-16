@@ -119,7 +119,7 @@ def main():
                 st.text(line)
 
         if st.button("Save questions to PDF"):
-            pdf_file = "generated_questions.pdf"
+            pdf_file = "files/generated_questions.pdf"
             save_to_pdf(questions, pdf_file)
 
             with open(pdf_file, "rb") as file:

@@ -19,21 +19,21 @@ def store_vector(loader):
 
     index=faiss.IndexFlatL2(dimension)
     index.add(vector)
-    faiss.write_index(index, "fais_vector.index")
+    faiss.write_index(index, "files/fais_vector.index")
     print("Vector stored successfully.")
     return vector
 
 
 def search(query):
-    index = faiss.read_index("fais_vector.index")
+    index = faiss.read_index("files/fais_vector.index")
     query_vector = model.encode([query], convert_to_numpy=True)
     distances, indices = index.search(query_vector, 1)
     return distances, indices
 
-if os.path.exists("fais_vector.index"):
+if os.path.exists("files/fais_vector.index"):
     pass
 else:
-    file_path = "marwadi_university.txt"
+    file_path = "files/marwadi_university.txt"
     loader = read_file(file_path)
     vector = store_vector(loader)
 
