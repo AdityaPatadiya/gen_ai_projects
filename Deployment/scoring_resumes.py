@@ -63,7 +63,7 @@ def score_resume(job_description, resume):
         azure_deployment=deployment,
         openai_api_key=openai_key,
         openai_api_version=openai_version,
-        temperature=0
+        temperature=0,
         max_tokens=200
     )  # type:ignore
     result = llm.predict(prompt)
