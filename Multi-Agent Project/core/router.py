@@ -22,7 +22,13 @@ def route_agent(state: AgentState) -> str:
     last_human_message = ""
     for msg in reversed(messages):
         if isinstance(msg, HumanMessage):
-            last_human_message = msg.content.lower()
+            if isinstance(msg.content, list):
+                # Join string elements and stringified dicts, then lowercase
+                last_human_message = " ".join(
+                    str(item) for item in msg.content
+                ).lower()
+            else:
+                last_human_message = str(msg.content).lower()
             break
     
     if not last_human_message:

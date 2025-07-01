@@ -1,16 +1,15 @@
 import os
 from typing import List, Annotated, TypedDict
 from datetime import date
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage
-from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_openai import AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
-from langchain_core.tools import tool # Import tool decorator
+from langchain_core.tools import tool
 
-# Define the shared state (imported from core.state)
-from core.state import AgentState # Notice the import: from package.module import Class
+from core.state import AgentState
 
 # Initialize LLM
-llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
+llm = AzureChatOpenAI(model="gpt-4o", temperature=0.7)
 
 # --- Define Tools for Leave Scheduling Assistant ---
 @tool
@@ -32,21 +31,24 @@ def check_leave_balance(employee_id: str) -> str:
         return f"Employee ID '{employee_id}' not found or balance unavailable in our dummy system."
 
 @tool
-def submit_leave_request(employee_id: str, start_date: str, end_date: str, reason: str) -> str:
+def submit_leave_request(args: dict) -> str:
     """
     Submits a leave request for an employee. Dates should be in YYYY-MM-DD format.
     Args:
-        employee_id (str): The ID of the employee.
-        start_date (str): The start date of the leave (YYYY-MM-DD).
-        end_date (str): The end date of the leave (YYYY-MM-DD).
-        reason (str): The reason for the leave (e.g., "vacation", "sick leave").
+        args (dict): A dictionary with keys 'employee_id', 'start_date', 'end_date', 'reason'.
     Returns:
         str: A confirmation or error message.
     """
+    employee_id = args.get("employee_id")
+    start_date = args.get("start_date")
+    end_date = args.get("end_date")
+    reason = args.get("reason")
     print(f"---TOOL CALL: submit_leave_request for EMP: {employee_id}, Dates: {start_date}-{end_date}, Reason: {reason}---")
     # This is a dummy implementation. In a real system, it would update an HR database.
     try:
         # Basic date validation
+        if not start_date or not end_date:
+            return "Leave request failed: Start date and end date are required."
         date.fromisoformat(start_date)
         date.fromisoformat(end_date)
         if employee_id not in ["EMP001", "EMP002"]:
@@ -91,13 +93,18 @@ def leave_scheduling_agent(state: AgentState):
             response_content = "Please provide the employee ID to check the balance."
     elif "submit leave" in last_human_message.lower() or "request leave" in last_human_message.lower():
         # Dummy extraction of details (replace with robust NLU/structured output from LLM)
-        employee_id = "EMP001" # Defaulting for example
-        start_date = "2025-07-15" # Defaulting for example
-        end_date = "2025-07-20"   # Defaulting for example
-        reason = "vacation"       # Defaulting for example
+        employee_id = "EMP001"
+        start_date = "2025-07-15"
+        end_date = "2025-07-20"
+        reason = "vacation"
 
-        # A real agent would extract these, confirm with user, then call the tool
-        submission_status = submit_leave_request(employee_id, start_date, end_date, reason)
+        # Call the underlying function directly to avoid the @tool decorator's signature enforcement
+        submission_status = submit_leave_request.invoke({
+            "employee_id": employee_id,
+            "start_date": start_date,
+            "end_date": end_date,
+            "reason": reason
+        })
         response_content = f"Attempting to submit leave. {submission_status}"
     else:
         # If no specific tool is triggered, just use the LLM for general response

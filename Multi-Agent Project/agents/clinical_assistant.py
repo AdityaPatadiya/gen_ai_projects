@@ -1,7 +1,7 @@
 import os
 from typing import List, Annotated, TypedDict
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-from langchain_openai import ChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.tools import tool # Import tool decorator
 
@@ -9,7 +9,11 @@ from langchain_core.tools import tool # Import tool decorator
 from core.state import AgentState # Notice the import: from package.module import Class
 
 # Initialize LLM (ensure OPENAI_API_KEY is set in your environment or .env)
-llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
+llm = AzureChatOpenAI(
+    
+    model="gpt-4o", 
+    temperature=0.7
+    )
 
 # --- Define Tools for Clinical Assistant ---
 @tool
@@ -40,7 +44,15 @@ def clinical_assistant_agent(state: AgentState):
     """
     print("---CLINICAL ASSISTANT AGENT PROCESSING---")
     messages = state['messages']
-    last_human_message = messages[-1].content if messages and isinstance(messages[-1], HumanMessage) else ""
+    last_human_message = ""
+    if messages and isinstance(messages[-1], HumanMessage):
+        content = messages[-1].content
+        if isinstance(content, list):
+            last_human_message = " ".join(
+                [c if isinstance(c, str) else str(c) for c in content]
+            )
+        else:
+            last_human_message = str(content)
 
     # Define the system prompt for the clinical assistant
     system_prompt = (
@@ -48,7 +60,7 @@ def clinical_assistant_agent(state: AgentState):
         "health information and suggest consulting a medical professional for any health concerns or "
         "personalized advice. You can use provided tools to assist."
     )
-    
+
     # Simplified tool invocation logic for demonstration
     response_content = ""
     if "guideline" in last_human_message.lower() or "advice on" in last_human_message.lower():
