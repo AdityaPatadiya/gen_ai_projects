@@ -1,41 +1,63 @@
 import os
+import requests
 from typing import List, Annotated, TypedDict
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_openai import AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.tools import tool # Import tool decorator
+from dotenv import load_dotenv
 
 # Define the shared state (imported from core.state)
 from core.state import AgentState # Notice the import: from package.module import Class
 
+load_dotenv()
+
 # Initialize LLM (ensure OPENAI_API_KEY is set in your environment or .env)
 llm = AzureChatOpenAI(
-    
-    model="gpt-4o", 
-    temperature=0.7
-    )
+    azure_endpoint=os.getenv("AZURE_OPENAI_API_BASE"),
+    api_key=os.getenv("AZURE_API_KEY"),
+    api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+    deployment_name=os.getenv("AZURE_OPENAI_API_NAME"),
+    model_name="gpt-4o",
+    max_tokens=300,
+) # type: ignore
 
 # --- Define Tools for Clinical Assistant ---
 @tool
 def get_medical_guideline(disease: str) -> str:
     """
-    Retrieves general medical guidelines for a given disease or symptom.
+    Retrieves general medical guidelines for a given disease or symptom from a hypothetical API.
     Args:
         disease (str): The disease or symptom to get guidelines for.
     Returns:
         str: General medical advice.
     """
     print(f"---TOOL CALL: get_medical_guideline for {disease}---")
-    # This is a dummy implementation. In a real system, it would query a medical database.
-    disease = disease.lower()
-    if "fever" in disease:
-        return "For fever, ensure hydration, rest, and consider over-the-counter fever reducers like paracetamol. Consult a doctor if symptoms worsen or persist or if fever is high/long-lasting."
-    elif "cold" in disease:
-        return "For common cold, rest, fluids, and symptom relievers (like decongestants). Not a serious condition, but consult a doctor if severe."
-    elif "headache" in disease:
-        return "For headaches, rest, hydration, and pain relievers. Seek medical attention if severe, sudden, or accompanied by other neurological symptoms."
-    else:
-        return f"I can provide general advice, but for '{disease}', it's best to consult a medical professional for personalized guidance."
+    # This is a hypothetical API call. In reality, you'd integrate with a real medical API.
+    # Example: A simplified endpoint that returns structured data.
+    API_URL = "https://api.example.com/medical_guidelines" # REPLACE with a real API if you have one
+    
+    try:
+        # For demonstration, we'll simulate an API response
+        if disease.lower() == "fever":
+            return "According to simulated medical data: For fever, ensure hydration, rest, and consider over-the-counter fever reducers like paracetamol. Consult a doctor if symptoms worsen or persist or if fever is high/long-lasting."
+        elif disease.lower() == "cold":
+            return "According to simulated medical data: For common cold, rest, fluids, and symptom relievers (like decongestants). Not a serious condition, but consult a doctor if severe."
+        elif disease.lower() == "headache":
+            return "According to simulated medical data: For headaches, rest, hydration, and pain relievers. Seek medical attention if severe, sudden, or accompanied by other neurological symptoms."
+        else:
+            # Simulate API call for unknown diseases
+            response = requests.get(API_URL, params={'query': disease}, timeout=5) # Added timeout
+            response.raise_for_status() # Raises HTTPError for bad responses (4xx or 5xx)
+            data = response.json()
+            if data and data.get("guideline"):
+                return f"According to external medical data: {data['guideline']}"
+            else:
+                return f"No specific guidelines found for '{disease}' from external sources. Please consult a medical professional for personalized advice."
+    except requests.exceptions.RequestException as e:
+        return f"Could not retrieve external medical guidelines due to an API error: {e}. Please try again later or consult a medical professional."
+    except Exception as e:
+        return f"An unexpected error occurred while processing medical guidelines: {e}"
 
 # --- Clinical Assistant Agent Node ---
 def clinical_assistant_agent(state: AgentState):

@@ -1,15 +1,24 @@
 import os
-from typing import List, Annotated, TypedDict
+import json
 from datetime import date
+import sqlite3
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_openai import AzureChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
 
 from core.state import AgentState
+from utils.db_setup import DATABASE_FILE
 
 # Initialize LLM
-llm = AzureChatOpenAI(model="gpt-4o", temperature=0.7)
+llm = AzureChatOpenAI(
+    azure_endpoint=os.getenv("AZURE_OPENAI_API_BASE"),
+    api_key=os.getenv("AZURE_API_KEY"),
+    api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+    deployment_name=os.getenv("AZURE_OPENAI_API_NAME"),
+    model_name="gpt-4o",
+    max_tokens=300,
+)
 
 # --- Define Tools for Leave Scheduling Assistant ---
 @tool
@@ -22,42 +31,57 @@ def check_leave_balance(employee_id: str) -> str:
         str: A message indicating the leave balance.
     """
     print(f"---TOOL CALL: check_leave_balance for {employee_id}---")
-    # This is a dummy implementation. In a real system, it would query an HR database.
-    if employee_id == "EMP001":
-        return "Employee EMP001 has 15 days of annual leave and 5 days of sick leave remaining. Last updated: 2025-06-30."
-    elif employee_id == "EMP002":
-        return "Employee EMP002 has 10 days of annual leave and 3 days of sick leave remaining. Last updated: 2025-06-30."
-    else:
-        return f"Employee ID '{employee_id}' not found or balance unavailable in our dummy system."
+    conn = sqlite3.connect(DATABASE_FILE)
+    cursor = conn.cursor()
+    cursor.execute("SELECT annual_leave_balance, sick_leave_balance FROM employees WHERE employee_id = ?", (employee_id,))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result:
+        annual, sick = result
+        return f"Employee {employee_id} has {annual} days of annual leave and {sick} days of sick leave remaining."
+    return f"Employee ID '{employee_id}' not found in the system."
 
 @tool
-def submit_leave_request(args: dict) -> str:
+def submit_leave_request(employee_id: str, start_date: str, end_date: str, reason: str) -> str:
     """
     Submits a leave request for an employee. Dates should be in YYYY-MM-DD format.
     Args:
-        args (dict): A dictionary with keys 'employee_id', 'start_date', 'end_date', 'reason'.
+        employee_id (str): The ID of the employee.
+        start_date (str): The start date of the leave (YYYY-MM-DD).
+        end_date (str): The end date of the leave (YYYY-MM-DD).
+        reason (str): The reason for the leave (e.g., "vacation", "sick leave").
     Returns:
         str: A confirmation or error message.
     """
-    employee_id = args.get("employee_id")
-    start_date = args.get("start_date")
-    end_date = args.get("end_date")
-    reason = args.get("reason")
     print(f"---TOOL CALL: submit_leave_request for EMP: {employee_id}, Dates: {start_date}-{end_date}, Reason: {reason}---")
-    # This is a dummy implementation. In a real system, it would update an HR database.
     try:
         # Basic date validation
-        if not start_date or not end_date:
-            return "Leave request failed: Start date and end date are required."
-        date.fromisoformat(start_date)
-        date.fromisoformat(end_date)
-        if employee_id not in ["EMP001", "EMP002"]:
-            return "Leave request failed: Invalid Employee ID."
+        s_date = date.fromisoformat(start_date)
+        e_date = date.fromisoformat(end_date)
+        if s_date > e_date:
+            return "Leave request failed: Start date cannot be after end date."
+        
+        conn = sqlite3.connect(DATABASE_FILE)
+        cursor = conn.cursor()
+        
+        # First, check if employee exists
+        cursor.execute("SELECT employee_id FROM employees WHERE employee_id = ?", (employee_id,))
+        if not cursor.fetchone():
+            conn.close()
+            return f"Leave request failed: Employee ID '{employee_id}' not found."
+
+        cursor.execute(
+            "INSERT INTO leave_requests (employee_id, start_date, end_date, reason, status) VALUES (?, ?, ?, ?, ?)",
+            (employee_id, start_date, end_date, reason, 'Pending')
+        )
+        conn.commit()
+        conn.close()
         return f"Leave request for Employee {employee_id} from {start_date} to {end_date} for '{reason}' submitted successfully and is pending approval."
     except ValueError:
         return "Leave request failed: Invalid date format. Please use YYYY-MM-DD."
     except Exception as e:
-        return f"Leave request failed due to an internal error: {e}"
+        return f"Leave request failed due to an internal database error: {e}"
 
 # --- Leave Scheduling Agent Node ---
 def leave_scheduling_agent(state: AgentState):
@@ -77,43 +101,55 @@ def leave_scheduling_agent(state: AgentState):
         "You can help check leave balances and submit leave requests. "
         "Always ask for necessary details if they are missing (e.g., employee ID, dates, reason)."
         "When submitting a leave request, confirm all details with the user first."
+        "Use current date and time." # Provide context for date understanding
     )
 
-    # For simplicity, we'll use keywords to trigger dummy tool calls.
-    # In a production system, you'd use LLM's function calling capabilities.
+    # In a real system, you'd use LLM's function calling capabilities here.
+    # For now, we'll keep the direct keyword-based triggering as in your original code,
+    # but the tool functions themselves are now backed by a database.
     response_content = ""
-    if "check balance" in last_human_message.lower() and "employee id" in last_human_message.lower():
-        # Dummy extraction of employee ID (replace with robust NLU)
-        parts = last_human_message.lower().split("employee id")
-        employee_id = parts[1].split()[0].upper().strip("?.,!") if len(parts) > 1 else "UNKNOWN"
-        if employee_id:
-            balance = check_leave_balance(employee_id)
-            response_content = f"Here is the leave balance: {balance}"
-        else:
-            response_content = "Please provide the employee ID to check the balance."
-    elif "submit leave" in last_human_message.lower() or "request leave" in last_human_message.lower():
-        # Dummy extraction of details (replace with robust NLU/structured output from LLM)
-        employee_id = "EMP001"
-        start_date = "2025-07-15"
-        end_date = "2025-07-20"
-        reason = "vacation"
 
-        # Call the underlying function directly to avoid the @tool decorator's signature enforcement
-        submission_status = submit_leave_request.invoke({
-            "employee_id": employee_id,
-            "start_date": start_date,
-            "end_date": end_date,
-            "reason": reason
-        })
-        response_content = f"Attempting to submit leave. {submission_status}"
+    # Use LLM with tools bound to it for intelligent tool use
+    # For this to work, the LLM needs to be able to "decide" to call tools
+    # This requires using the LLM in a way that enables tool calling.
+    # Langchain's `create_react_agent` or binding tools directly to the LLM and processing `tool_calls`
+    # in the output is the standard way. Let's simplify for now, keeping your structure,
+    # but remember this is the area for advanced NLU.
+
+    # Example of how you would set up LLM with tools
+    llm_with_tools = llm.bind_tools([check_leave_balance, submit_leave_request])
+
+    # The prompt should encourage the LLM to use tools
+    prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=last_human_message)
+    ])
+
+    # Invoke the LLM with the bound tools
+    llm_response = llm_with_tools.invoke(prompt.format_messages())
+
+    # Check if the LLM decided to call a tool
+    tool_calls = llm_response.additional_kwargs.get("tool_calls", [])
+    if tool_calls:
+        for tool_call in tool_calls:
+            print("Tool call received:", tool_call)
+            tool_name = tool_call.get('name')
+            raw_args = tool_call.get('args', {})
+            tool_args = json.loads(raw_args) if isinstance(raw_args, str) else raw_args
+
+            if tool_name == "check_leave_balance":
+                response_content = check_leave_balance(tool_args.get("employee_id"))
+            elif tool_name == "submit_leave_request":
+                # Unpack arguments for submit_leave_request
+                response_content = submit_leave_request(
+                    tool_args.get("employee_id"),
+                    tool_args.get("start_date"),
+                    tool_args.get("end_date"),
+                    tool_args.get("reason")
+                )
+            else:
+                response_content = f"Tool '{tool_name}' not recognized."
     else:
-        # If no specific tool is triggered, just use the LLM for general response
-        prompt = ChatPromptTemplate.from_messages([
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=last_human_message)
-        ])
-        prompt_value = prompt.format()
-        llm_response = llm.invoke(prompt_value)
         response_content = llm_response.content
 
     return {"messages": [AIMessage(content=response_content)]}

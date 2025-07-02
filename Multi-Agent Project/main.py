@@ -38,9 +38,9 @@ def build_graph():
     builder.add_conditional_edges(
         "router",
         # This lambda function takes the output of the 'router' node
-        # (which is the string name of the next agent) and uses it
+        # (which is the dict name of the next agent) and uses it
         # to determine the next node.
-        lambda x: x,
+        lambda state: state["__route__"],
         {
             "clinical_assistant": "clinical_assistant",
             "leave_scheduling": "leave_scheduling",
