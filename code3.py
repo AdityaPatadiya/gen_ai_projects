@@ -1,6 +1,6 @@
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langchain.chat_models import AzureChatOpenAI
+from langchain_openai import AzureChatOpenAI
 from langchain.chains import LLMChain
 import os
 from dotenv import load_dotenv
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 llm = AzureChatOpenAI(
-    openai_api_base=os.getenv("AZURE_OPENAI_API_BASE"),
+    azure_endpoint=os.getenv("AZURE_OPENAI_API_BASE"),
     openai_api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
     openai_api_key=os.getenv("AZURE_API_KEY"),
     deployment_name=os.getenv("AZURE_OPENAI_API_NAME"),

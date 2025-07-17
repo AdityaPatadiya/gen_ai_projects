@@ -1,20 +1,18 @@
-from langgraph.graph import MessagesState, StateGraph, END, START
+# ReAct Agent with Context
+
+from langgraph.graph import MessagesState, StateGraph, START
 from langchain_core.messages import HumanMessage, SystemMessage, AnyMessage
 from langchain_community.tools import DuckDuckGoSearchRun
 from langgraph.prebuilt import tools_condition
 from langgraph.prebuilt import ToolNode
 from langchain_community.tools import tool
-from IPython.display import Image, display
-from typing import Annotated, TypedDict
-import operator
-from langgraph.graph.message import add_messages
 import os
 from langchain_openai import AzureChatOpenAI
 
 api_base = os.getenv("AZURE_OPENAI_API_BASE")
 api_version = os.getenv("AZURE_OPENAI_API_VERSION")
 api_key = os.getenv("AZURE_API_KEY")
-deployment_name = os.getenv("AZURE_OPENAI_API_NAME")
+# deployment_name = os.getenv("AZURE_OPENAI_API_NAME")
 
 llm = AzureChatOpenAI(
     azure_endpoint=api_base,
